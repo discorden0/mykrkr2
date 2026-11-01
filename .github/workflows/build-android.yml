@@ -6,7 +6,7 @@ on:
 
 env:
   ANDROID_NDK_VERSION: "28.0.13004108"
-  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite"
+  VCPKG_BINARY_SOURCES: "clear;filesystem,${{ github.workspace }}/.vcpkg-cache,readwrite"
   VCPKG_INSTALL_OPTIONS: "--debug"
 
 jobs:
@@ -108,19 +108,13 @@ jobs:
           
           ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.sh
 
-      - name: Add NuGet sources
-        shell: bash
-        run: |
-          mono `${{ env.VCPKG_ROOT }}/vcpkg fetch nuget | tail -n 1` \
-            sources add \
-            -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-            -StorePasswordInClearText \
-            -Name GitHubPackages \
-            -UserName "${{ github.actor }}" \
-            -Password "${{ secrets.NUGET_API_KEY }}"
-          mono `${{ env.VCPKG_ROOT }}/vcpkg fetch nuget | tail -n 1` \
-            setapikey "${{ secrets.NUGET_API_KEY }}" \
-            -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.vcpkg-cache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.18
