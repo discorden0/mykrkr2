@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  VCPKG_BINARY_SOURCES: "clear;filesystem,${{ github.workspace }}/.vcpkg-cache,readwrite"
+  VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
   VCPKG_INSTALL_OPTIONS: "--debug"
 
 jobs:
